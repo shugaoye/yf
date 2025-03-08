@@ -27,6 +27,8 @@ rest_api.init_app(app)
 CORS(app)
 
 # Setup database
-@app.before_first_request
+@app.before_request
 def initialize_database():
-    db.create_all()
+    if not hasattr(app, 'db_initialized'):
+        db.create_all()
+        app.db_initialized = True
