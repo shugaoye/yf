@@ -1,4 +1,3 @@
 FLASK_ENV=development
 FLASK_APP=run.py
 
-SECRET_KEY=Super_s3cret7777
