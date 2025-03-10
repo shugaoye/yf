@@ -51,3 +51,37 @@ class YahooFinanceService:
             return hist['Close'].iloc[-1]
         else:
             return None
+
+    @staticmethod
+    def get_stock_prices(symbols, start_date=None, end_date=None):
+        """
+        Fetches the stock prices for an array of symbols between the specified start and end dates.
+        If no dates are provided, it fetches the prices for the last trading date.
+
+        Args:
+            symbols (list): The list of stock symbols to fetch data for.
+            start_date (str or datetime, optional): The start date for fetching data. Defaults to None.
+            end_date (str or datetime, optional): The end date for fetching data. Defaults to None.
+
+        Returns:
+            dict: A dictionary with symbols as keys and their closing stock prices as values.
+        """
+        start_date, end_date = process_dates(start_date, end_date)
+        delta = end_date - start_date
+
+        print(f"Fetching stock data for symbols from {start_date} to {end_date}, total days: {delta.days}")
+        
+        prices = {}
+        for symbol in symbols:
+            # Fetch stock data
+            stock = yf.Ticker(symbol)
+            hist = stock.history(start=start_date, end=end_date)
+            print(hist)
+
+            # Check if data is available for the given date
+            if not hist.empty:
+                prices[symbol] = hist['Close'].iloc[-1]
+            else:
+                prices[symbol] = None
+
+        return prices

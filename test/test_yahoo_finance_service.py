@@ -31,5 +31,39 @@ def test_get_stock_price_invalid_symbol():
     price = YahooFinanceService.get_stock_price(symbol, date)
     assert price is None, "Price should be None for an invalid symbol"
 
+def test_get_stock_prices_valid_symbols():
+    symbols = ['EPAM', 'MSFT']
+    start_date = '2023-01-01'
+    end_date = '2023-01-10'
+    prices = YahooFinanceService.get_stock_prices(symbols, start_date, end_date)
+    assert all(price is not None for price in prices.values()), "Prices should not be None for valid symbols and dates"
+
+def test_get_stock_prices_last_trading_date():
+    symbols = ['EPAM', 'MSFT']
+    prices = YahooFinanceService.get_stock_prices(symbols)
+    assert all(price is not None for price in prices.values()), "Prices should not be None for valid symbols"
+
+def test_get_stock_prices_invalid_dates():
+    symbols = ['EPAM', 'MSFT']
+    start_date = '1900-01-01'
+    end_date = '1900-01-10'
+    prices = YahooFinanceService.get_stock_prices(symbols, start_date, end_date)
+    assert all(price is None for price in prices.values()), "Prices should be None for invalid dates"
+
+def test_get_stock_prices_date_as_datetime():
+    symbols = ['EPAM', 'MSFT']
+    start_date = datetime(2023, 1, 1)
+    end_date = datetime(2023, 1, 10)
+    prices = YahooFinanceService.get_stock_prices(symbols, start_date, end_date)
+    assert all(price is not None for price in prices.values()), "Prices should not be None for valid datetime objects"
+
+def test_get_stock_prices_invalid_symbols():
+    symbols = ['INVALID1', 'INVALID2']
+    start_date = '2023-01-01'
+    end_date = '2023-01-10'
+    prices = YahooFinanceService.get_stock_prices(symbols, start_date, end_date)
+    assert all(price is None for price in prices.values()), "Prices should be None for invalid symbols"
+
+
 
 
