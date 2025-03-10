@@ -48,9 +48,9 @@ class YahooFinanceService:
 
         # Check if data is available for the given date
         if not hist.empty:
-            return hist['Close'].iloc[-1]
+            return hist['Close'].iloc[-1], hist.index[-1].date()
         else:
-            return None
+            return None, None
 
     @staticmethod
     def get_stock_prices(symbols, start_date=None, end_date=None):
@@ -84,4 +84,7 @@ class YahooFinanceService:
             else:
                 prices[symbol] = None
 
-        return prices
+        if hist.empty:
+            return prices, None
+        else:
+            return prices, hist.index[-1].date()

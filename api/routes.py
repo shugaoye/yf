@@ -7,6 +7,7 @@ from flask import request
 from flask_restx import Api, Resource, fields
 
 from api.models import db, Datas, YData
+from api.yahoo_finance_service import YahooFinanceService
 
 rest_api = Api(version="1.0", title="Yahoo Finance Data API")
 
@@ -45,6 +46,13 @@ update_yahoo_model = rest_api.model('UpdateYahooModel', {
     "symbol": fields.String(required=False, min_length=1, max_length=10),
     "price": fields.Float(required=False),
     "date": fields.DateTime(required=False)
+})
+
+# Define a new model to validate the input data for fetching stock prices
+symbols_model = rest_api.model('SymbolsModel', {
+    "symbols": fields.List(fields.String(required=True, min_length=1, max_length=10), required=True),
+    "start_date": fields.String(required=False),
+    "end_date": fields.String(required=False)
 })
 
 """
@@ -248,3 +256,32 @@ class YahooFinanceItemManager(Resource):
 
         return {"success" : True,
                 "msg"     : "Item [" +str(id)+ "] successfully deleted"}, 200
+
+@rest_api.route('/api/stock_prices')
+class StockPrices(Resource):
+
+    """
+       Fetch stock prices for a list of symbols
+    """
+    @rest_api.expect(symbols_model, validate=True)
+    def post(self):
+
+        # Read ALL input  
+        req_data = request.get_json()
+
+        # Get the information    
+        symbols = req_data.get("symbols")
+        start_date = req_data.get("start_date")
+        end_date = req_data.get("end_date")
+
+        # Fetch stock prices
+        prices, close_date = YahooFinanceService.get_stock_prices(symbols, start_date, end_date)
+        
+        # Format close_date to a string in "YYYY-MM-DD" format
+        if close_date:
+            close_date = close_date.strftime('%Y-%m-%d')
+
+        return {"success": True,
+                "msg": "Stock prices fetched successfully",
+                "close_date": close_date,
+                "data": prices}, 200
