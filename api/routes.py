@@ -4,7 +4,9 @@ Copyright (c) 2019 - present AppSeed.us
 """
 
 import os
-from flask import request, jsonify
+import hashlib
+import hmac
+from flask import request
 from flask_restx import Api, Resource, fields
 
 from api.models import db, Datas, YData
@@ -69,9 +71,12 @@ def verify_signature(request):
     # Create the canonical message to hash
     method = request.method
     url = request.url
-    headers = request.headers.copy()
-    # Exclude the Authorization header itself from the message
-    del headers["Authorization"]
+    headers = {
+        key: request.headers[key] 
+        for key in ["Content-Type", "X-Timestamp"] 
+        if key in request.headers
+    }
+
     # Include a timestamp to prevent replay attacks
     if "X-Timestamp" not in headers:
         return False, "Missing X-Timestamp header"
@@ -79,10 +84,12 @@ def verify_signature(request):
 
     # Construct the message
     message = f"{method}\n{url}\n{headers}\n{body}"
+    # print(message)
 
     # Generate the expected signature
     try:
         computed_signature = hmac.new(SECRET_KEY.encode(), message.encode(), hashlib.sha256).hexdigest()
+        # print(computed_signature)
     except Exception as e:
         return False, f"Signature verification failed: {str(e)}"
 
@@ -123,6 +130,7 @@ class StockPrices(Resource):
        Fetch stock prices for a list of symbols
     """
     @rest_api.expect(symbols_model, validate=True)
+    @require_hmac
     def post(self):
 
         # Read ALL input  
