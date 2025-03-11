@@ -12,7 +12,7 @@ from flask_restx import Api, Resource, fields
 from api.models import db, Datas, YData
 from api.yahoo_finance_service import YahooFinanceService
 
-rest_api = Api(version="1.1", title="Yahoo Finance Data API")
+rest_api = Api(version="1.2", title="Yahoo Finance Data API", doc=False)
 
 """
 API Interface:
